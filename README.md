@@ -11,9 +11,17 @@ for every dollar spent between $50 and $100 in each transaction.
 The application processes transaction records over a three-month period and calculates the reward points earned by each customer on a monthly basis as well as their total points.
 
 
-## Installation
+## Technologies Used
+* Java 8
+* Spring Boot 2.6.3
+* Swagger 2.7.0
+* Junit
+* Maven
 
-1.Clone the repository i.e  
+
+## Installation Guide
+
+1.Clone the repository using the below url  
 ```bash
 https://github.com/ravirazsahu/spring-boot-rewards-system.git
 ```
@@ -25,28 +33,210 @@ cd spring-boot-rewards-system
 ```bash
 mvn clean install
 ```
-4. After successfully installing the project, you can run the project from STS.
+4. After successfully installing the project, you can run the project from Eclipse/STS.
 
 5. The application will be available at 
 ```bash
 http://localhost:9010/retailer-rewards
 ```
-6. Please execute the insert queries available in the transaction_queries.sql file manually. For some reason, h2 db does not pick up this file while executing. I will fix that issue.
+6. Please execute the insert queries available in the transaction_queries.sql file manually or Bulk Entry api can allow you to insert data.
 
-## Technologies Used
-* Java 8
-* Spring Boot 2.6.3
-* swagger
-* Junit
-* Maven
+## Flow Diagram
 
+![reward-api-flowdiagram](https://github.com/user-attachments/assets/ba0bcbf7-3a95-463a-a0ec-77f5b15289ce)
 
 
 ## API Endpoints
-GET 
+
+
+1.Bulk Entry of reward transactions
+```bash
+/api/reward/bulk/entry
+```
+**Method:**  POST
+
+**Description:** This API allows you to insert sample bulk transaction data.
+
+**Example:** To inserting data, send a POST request to 
+```bash
+http://localhost:9010/retailer-rewards/api/reward/bulk/entry
+```
+**Request Body**
+
+```bash
+{
+  "transactions": [
+    {
+      "customerName": "Roxy",
+      "amount": 120,
+      "date": "2024-04-18"
+    },
+    {
+      "customerName": "Roxy",
+      "amount": 90,
+      "date": "2024-06-25"
+    },
+    {
+      "customerName": "Roxy",
+      "amount": 60,
+      "date": "2024-07-01"
+    },
+    {
+      "customerName": "Jack",
+      "amount": 60,
+      "date": "2024-02-11"
+    },
+    {
+      "customerName": "Jack",
+      "amount": 50,
+      "date": "2024-04-15"
+    },
+    {
+      "customerName": "Sam",
+      "amount": 200,
+      "date": "2024-07-18"
+    },
+    {
+      "customerName": "Sam",
+      "amount": 130,
+      "date": "2024-06-15"
+    },
+    {
+      "customerName": "Sam",
+      "amount": 90,
+      "date": "2024-06-22"
+    },
+    {
+      "customerName": "John",
+      "amount": 55,
+      "date": "2024-07-01"
+    },
+    {
+      "customerName": "John",
+      "amount": 95,
+      "date": "2024-04-10"
+    }
+  ]
+}
+
+```
+**Response:**
+```bash
+{
+    "data": [
+        {
+            "customerId": "1",
+            "customerName": "Roxy",
+            "amount": 120.0,
+            "date": [
+                2024,
+                4,
+                18
+            ]
+        },
+        {
+            "customerId": "2",
+            "customerName": "Roxy",
+            "amount": 90.0,
+            "date": [
+                2024,
+                6,
+                25
+            ]
+        },
+        {
+            "customerId": "3",
+            "customerName": "Roxy",
+            "amount": 60.0,
+            "date": [
+                2024,
+                7,
+                1
+            ]
+        },
+        {
+            "customerId": "4",
+            "customerName": "Jack",
+            "amount": 60.0,
+            "date": [
+                2024,
+                2,
+                11
+            ]
+        },
+        {
+            "customerId": "5",
+            "customerName": "Jack",
+            "amount": 50.0,
+            "date": [
+                2024,
+                4,
+                15
+            ]
+        },
+        {
+            "customerId": "6",
+            "customerName": "Sam",
+            "amount": 200.0,
+            "date": [
+                2024,
+                7,
+                18
+            ]
+        },
+        {
+            "customerId": "7",
+            "customerName": "Sam",
+            "amount": 130.0,
+            "date": [
+                2024,
+                6,
+                15
+            ]
+        },
+        {
+            "customerId": "8",
+            "customerName": "Sam",
+            "amount": 90.0,
+            "date": [
+                2024,
+                6,
+                22
+            ]
+        },
+        {
+            "customerId": "9",
+            "customerName": "John",
+            "amount": 55.0,
+            "date": [
+                2024,
+                7,
+                1
+            ]
+        },
+        {
+            "customerId": "10",
+            "customerName": "John",
+            "amount": 95.0,
+            "date": [
+                2024,
+                4,
+                10
+            ]
+        }
+    ],
+    "message": "Record Inserted Successfully.",
+    "status": 200
+}
+```
+
+
+2. Fetch Reward points using below api
 ```bash
 /api/reward
 ```
+**Method:** GET
+
 **Description:** Calculates and retrieves the reward points for each customer per month.
 
 **Example:** To retrieve reward points, send a GET request to 
@@ -55,60 +245,70 @@ http://localhost:9010/retailer-rewards/api/reward
 ```
 
 **sample data:**
+```bash
+{ "customerName": "Roxy", "amount": 120, "date": "2024-04-18" }
+{ "customerName": "Roxy", "amount": 90, "date": "2024-06-25" }
+{ "customerName": "Roxy", "amount": 60, "date": "2024-07-01" }
+{ "customerName": "Jack", "amount": 60, "date": "2024-02-11" }
+{ "customerName": "Jack", "amount": 50, "date": "2024-04-15" }
+{ "customerName": "Sam", "amount": 200, "date": "2024-07-18" }
+{ "customerName": "Sam", "amount": 130, "date": "2024-06-15" }
+{ "customerName": "Sam", "amount": 90, "date": "2024-06-22" }
+{ "customerName": "John", "amount": 55, "date": "2024-07-01" }
+{ "customerName": "John", "amount": 95, "date": "2024-04-10" }
 
-
-![reward-system-input-db-data-new](https://github.com/user-attachments/assets/8688c3d9-be2e-4281-8356-ea5c3d603977)
+```
 
 
 
 **Response:**
 ```bash
 {
-  "data": [
-    {
-      "name": "John",
-      "year": 2024,
-      "monthWisePoints": [
+    "data": [
         {
-          "month": "JULY",
-          "points": 5
-        }
-      ],
-      "totalPoints": 5
-    },
-    {
-      "name": "Roxy",
-      "year": 2024,
-      "monthWisePoints": [
-        {
-          "month": "JUNE",
-          "points": 40
+            "name": "John",
+            "year": 2024,
+            "totalPoints": 5.0,
+            "monthWisePoints": [
+                {
+                    "month": "JULY",
+                    "points": 5
+                }
+            ]
         },
         {
-          "month": "JULY",
-          "points": 10
-        }
-      ],
-      "totalPoints": 50
-    },
-    {
-      "name": "Sam",
-      "year": 2024,
-      "monthWisePoints": [
-        {
-          "month": "JUNE",
-          "points": 150
+            "name": "Roxy",
+            "year": 2024,
+            "totalPoints": 50.0,
+            "monthWisePoints": [
+                {
+                    "month": "JUNE",
+                    "points": 40
+                },
+                {
+                    "month": "JULY",
+                    "points": 10
+                }
+            ]
         },
         {
-          "month": "JULY",
-          "points": 250
+            "name": "Sam",
+            "year": 2024,
+            "totalPoints": 400.0,
+            "monthWisePoints": [
+                {
+                    "month": "JUNE",
+                    "points": 150
+                },
+                {
+                    "month": "JULY",
+                    "points": 250
+                }
+            ]
         }
-      ],
-      "totalPoints": 400
-    }
-  ],
-  "message": "Data Retrieved Successfully.",
-  "status": 200
+    ],
+    "message": "Data Retrieved Successfully.",
+    "status": 200
 }
 ```
 
