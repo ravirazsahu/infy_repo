@@ -13,7 +13,7 @@ import org.springframework.web.bind.annotation.RestController;
 
 import com.retailer.reward.dto.RewardsResponseDTO;
 import com.retailer.reward.dto.UserRequestDTO;
-import com.retailer.reward.entity.RewardTransaction;
+import com.retailer.reward.dto.UserResponseDTO;
 import com.retailer.reward.handlers.ResponseHandler;
 import com.retailer.reward.service.RewardCalculationService;
 
@@ -27,7 +27,7 @@ public class RewardCalculationController {
 	private RewardCalculationService rewardservice;
 
 	@ApiOperation(value = "Returns a Transactions of 3 months by default for all the retailer customers")
-	@GetMapping
+	@GetMapping("/fetch/all")
 	public ResponseEntity<Object> getRewards() {
 
 		List<RewardsResponseDTO> calculatedRewards = rewardservice.calculateRewards();
@@ -46,7 +46,7 @@ public class RewardCalculationController {
 			if (reqdto.getTransactions() == null || reqdto.getTransactions().isEmpty()) {
 				throw new RuntimeException("Invalid Data!!!");
 			}
-			List<RewardTransaction> savedTransactions = rewardservice.addUsers(reqdto.getTransactions());
+			List<UserResponseDTO> savedTransactions = rewardservice.addUsers(reqdto.getTransactions());
 			return ResponseHandler.createResponse("Record Inserted Successfully.", HttpStatus.OK, savedTransactions);
 		} catch (RuntimeException e) {
 			return ResponseHandler.createResponse(e.getMessage(), HttpStatus.BAD_REQUEST, null);

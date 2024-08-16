@@ -13,7 +13,7 @@ public class RewardsResponseDTO {
 
 	private String name;
 	private Integer year;
-	private double totalPoints;
+	private Long totalPoints;
 	private List<MonthWisePointsDTO> monthWisePoints;
 
 }

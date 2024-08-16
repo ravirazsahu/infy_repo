@@ -1,6 +1,7 @@
 package com.retailer.reward.service;
 
 import java.time.LocalDate;
+import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
 import java.util.stream.Collectors;
@@ -15,6 +16,7 @@ import org.springframework.transaction.annotation.Transactional;
 
 import com.retailer.reward.dto.MonthWisePointsDTO;
 import com.retailer.reward.dto.RewardsResponseDTO;
+import com.retailer.reward.dto.UserResponseDTO;
 import com.retailer.reward.entity.RewardTransaction;
 import com.retailer.reward.repo.RewardsRepository;
 
@@ -27,14 +29,16 @@ public class RewardCalculationServiceImpl implements RewardCalculationService {
 
 	@Override
 	@Transactional
-	public List<RewardTransaction> addUsers(@Valid List<RewardTransaction> transactions) {
-
+	public List<UserResponseDTO> addUsers(@Valid List<RewardTransaction> transactions) {
+		List<UserResponseDTO> respdto = new ArrayList<>();
 		List<RewardTransaction> resplit = rewardRepo.saveAll(transactions);
-		if (resplit.size() == 0) {
+		if (resplit.isEmpty() && resplit.size() == 0) {
 			throw new RuntimeException("Data insertion failed!!!!");
+		} else {
+			resplit.forEach(tr -> respdto.add(new UserResponseDTO(tr.getCustomerId(), tr.getCustomerName(),
+					(int) tr.getAmount(), tr.getDate().toString())));
 		}
-
-		return resplit;
+		return respdto;
 	}
 
 	@Override
@@ -51,7 +55,7 @@ public class RewardCalculationServiceImpl implements RewardCalculationService {
 								Collectors.summingInt(trspoint -> calculateRewardPoints(trspoint.getAmount())))));
 		log.info("monthwisereward >> " + monthwisereward.toString());
 
-		Map<String, Integer> totalRewards = calculateMonthWiseRewardPoint(monthwisereward);
+		Map<String, Long> totalRewards = calculateMonthWiseRewardPoint(monthwisereward);
 
 		return monthwisereward.entrySet().stream().map(entry -> {
 			String username = entry.getKey();
@@ -70,9 +74,9 @@ public class RewardCalculationServiceImpl implements RewardCalculationService {
 		}).collect(Collectors.toList());
 	}
 
-	private Map<String, Integer> calculateMonthWiseRewardPoint(Map<String, Map<String, Integer>> monthwiserewards) {
+	private Map<String, Long> calculateMonthWiseRewardPoint(Map<String, Map<String, Integer>> monthwiserewards) {
 		return monthwiserewards.entrySet().stream().collect(Collectors.toMap(Map.Entry::getKey,
-				entry -> entry.getValue().values().stream().mapToInt(Integer::intValue).sum()));
+				entry -> entry.getValue().values().stream().mapToLong(Integer::intValue).sum()));
 	}
 
 	private int calculateRewardPoints(double amount) {

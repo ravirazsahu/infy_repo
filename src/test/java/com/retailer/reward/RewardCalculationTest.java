@@ -11,6 +11,7 @@ import java.time.LocalDate;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
+import java.util.stream.Collectors;
 
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
@@ -25,8 +26,10 @@ import org.springframework.test.web.servlet.setup.MockMvcBuilders;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.datatype.jsr310.JavaTimeModule;
 import com.retailer.reward.controller.RewardCalculationController;
+import com.retailer.reward.dto.MonthWisePointsDTO;
 import com.retailer.reward.dto.RewardsResponseDTO;
 import com.retailer.reward.dto.UserRequestDTO;
+import com.retailer.reward.dto.UserResponseDTO;
 import com.retailer.reward.entity.RewardTransaction;
 import com.retailer.reward.service.RewardCalculationService;
 
@@ -48,19 +51,38 @@ public class RewardCalculationTest {
 
 	@Test
 	public void fetch_reward_points_Successful() throws Exception {
+
+		List<MonthWisePointsDTO> roxymonthwisepoints = new ArrayList<>();
+		Collections.addAll(roxymonthwisepoints, new MonthWisePointsDTO("JULY", 90),
+				new MonthWisePointsDTO("AUGUST", 15));
+
+		List<MonthWisePointsDTO> jackmonthwisepoints = new ArrayList<>();
+		Collections.addAll(jackmonthwisepoints, new MonthWisePointsDTO("JULY", 110),
+				new MonthWisePointsDTO("AUGUST", 90));
+
 		// Create mock request data
 		List<RewardsResponseDTO> mockRewards = new ArrayList<>();
-		mockRewards.add(new RewardsResponseDTO("Roxy", Integer.valueOf(2024), 950.0, null));
+		mockRewards.add(new RewardsResponseDTO("Roxy", 2024, 40L, roxymonthwisepoints));
+		mockRewards.add(new RewardsResponseDTO("Jack", 2024, 110L, jackmonthwisepoints));
 
 		// Mock the service call
 		Mockito.when(rewardCalculationService.calculateRewards()).thenReturn(mockRewards);
 
 		// Perform the GET request and verify the response
-		mockMvc.perform(get("/api/reward").contentType(MediaType.APPLICATION_JSON)).andExpect(status().isOk())
+		mockMvc.perform(get("/api/reward/fetch/all").contentType(MediaType.APPLICATION_JSON)).andExpect(status().isOk())
 				.andExpect(jsonPath("$.message").value("Data Retrieved Successfully."))
 				.andExpect(jsonPath("$.data[0].name").value("Roxy")).andExpect(jsonPath("$.data[0].year").value(2024))
-				.andExpect(jsonPath("$.data[0].totalPoints").value(950.0))
-				.andExpect(jsonPath("$.data[0].monthWisePoints").isEmpty());
+				.andExpect(jsonPath("$.data[0].totalPoints").value(40))
+				.andExpect(jsonPath("$.data[0].monthWisePoints[0].month").value("JULY"))
+				.andExpect(jsonPath("$.data[0].monthWisePoints[0].points").value(90))
+				.andExpect(jsonPath("$.data[0].monthWisePoints[1].month").value("AUGUST"))
+				.andExpect(jsonPath("$.data[0].monthWisePoints[1].points").value(15))
+				.andExpect(jsonPath("$.data[1].name").value("Jack")).andExpect(jsonPath("$.data[0].year").value(2024))
+				.andExpect(jsonPath("$.data[1].totalPoints").value(110))
+				.andExpect(jsonPath("$.data[1].monthWisePoints[0].month").value("JULY"))
+				.andExpect(jsonPath("$.data[1].monthWisePoints[0].points").value(110))
+				.andExpect(jsonPath("$.data[1].monthWisePoints[1].month").value("AUGUST"))
+				.andExpect(jsonPath("$.data[1].monthWisePoints[1].points").value(90));
 
 	}
 
@@ -70,26 +92,44 @@ public class RewardCalculationTest {
 		Mockito.when(rewardCalculationService.calculateRewards()).thenReturn(Collections.emptyList());
 
 		// Perform the GET request and verify the response
-		mockMvc.perform(get("/api/reward").contentType(MediaType.APPLICATION_JSON)).andExpect(status().isOk())
+		mockMvc.perform(get("/api/reward/fetch/all").contentType(MediaType.APPLICATION_JSON)).andExpect(status().isOk())
 				.andExpect(jsonPath("$.message").value("Data is not available !"))
 				.andExpect(jsonPath("$.status").value(200));
 	}
 
 	@Test
-	public void fetch_reward_points_NoRewards() throws Exception {
-		// Prepare mock data: A customer with transactions <= 50
+	public void fetch_reward_points_amount_lessthan_50() throws Exception {
+
+		List<MonthWisePointsDTO> roxymonthwisepoints = new ArrayList<>();
+		Collections.addAll(roxymonthwisepoints, new MonthWisePointsDTO("JULY", 9), new MonthWisePointsDTO("AUGUST", 1));
+
+		List<MonthWisePointsDTO> jackmonthwisepoints = new ArrayList<>();
+		Collections.addAll(jackmonthwisepoints, new MonthWisePointsDTO("JULY", 5), new MonthWisePointsDTO("AUGUST", 4));
+
+		// Create mock request data
 		List<RewardsResponseDTO> mockRewards = new ArrayList<>();
-		mockRewards.add(new RewardsResponseDTO("Sam", Integer.valueOf(2024), 47.0, null));
+		mockRewards.add(new RewardsResponseDTO("Roxy", 2024, 0L, roxymonthwisepoints));
+		mockRewards.add(new RewardsResponseDTO("Jack", 2024, 0L, jackmonthwisepoints));
 
 		// Mock the service call
 		Mockito.when(rewardCalculationService.calculateRewards()).thenReturn(mockRewards);
 
 		// Perform the GET request and verify the response
-		mockMvc.perform(get("/api/reward").contentType(MediaType.APPLICATION_JSON)).andExpect(status().isOk())
+		mockMvc.perform(get("/api/reward/fetch/all").contentType(MediaType.APPLICATION_JSON)).andExpect(status().isOk())
 				.andExpect(jsonPath("$.message").value("Data Retrieved Successfully."))
-				.andExpect(jsonPath("$.data[0].name").value("Sam")).andExpect(jsonPath("$.data[0].year").value(2024))
-				.andExpect(jsonPath("$.data[0].totalPoints").value(47.0))
-				.andExpect(jsonPath("$.data[0].monthWisePoints").isEmpty());
+				.andExpect(jsonPath("$.data[0].name").value("Roxy")).andExpect(jsonPath("$.data[0].year").value(2024))
+				.andExpect(jsonPath("$.data[0].totalPoints").value(0))
+				.andExpect(jsonPath("$.data[0].monthWisePoints[0].month").value("JULY"))
+				.andExpect(jsonPath("$.data[0].monthWisePoints[0].points").value(9))
+				.andExpect(jsonPath("$.data[0].monthWisePoints[1].month").value("AUGUST"))
+				.andExpect(jsonPath("$.data[0].monthWisePoints[1].points").value(1))
+				.andExpect(jsonPath("$.data[1].name").value("Jack")).andExpect(jsonPath("$.data[0].year").value(2024))
+				.andExpect(jsonPath("$.data[1].totalPoints").value(0))
+				.andExpect(jsonPath("$.data[1].monthWisePoints[0].month").value("JULY"))
+				.andExpect(jsonPath("$.data[1].monthWisePoints[0].points").value(5))
+				.andExpect(jsonPath("$.data[1].monthWisePoints[1].month").value("AUGUST"))
+				.andExpect(jsonPath("$.data[1].monthWisePoints[1].points").value(4));
+
 	}
 
 	@Test
@@ -116,13 +156,17 @@ public class RewardCalculationTest {
 	void testInsertBulkRecords_SuccessfulEntry() throws Exception {
 		// Create mock request data
 		List<RewardTransaction> rewardlist = new ArrayList<>();
-		rewardlist.add(new RewardTransaction("1", "Roxy", 120.0, LocalDate.of(2024, 8, 10)));
+		rewardlist.add(new RewardTransaction(null, "Roxy", 120, LocalDate.of(2024, 8, 10)));
+
+		List<UserResponseDTO> resplist = rewardlist.stream().map(
+				tr -> new UserResponseDTO("1", tr.getCustomerName(), (int) tr.getAmount(), tr.getDate().toString()))
+				.collect(Collectors.toList());
 
 		UserRequestDTO mockRequest = new UserRequestDTO();
 		mockRequest.setTransactions(rewardlist);
 
 		// Mock the service call
-		when(rewardCalculationService.addUsers(mockRequest.getTransactions())).thenReturn(rewardlist);
+		when(rewardCalculationService.addUsers(mockRequest.getTransactions())).thenReturn(resplist);
 
 		// Convert the request to JSON
 		ObjectMapper objectMapper = new ObjectMapper();
@@ -134,10 +178,8 @@ public class RewardCalculationTest {
 				.andExpect(status().isOk()).andExpect(content().contentType(MediaType.APPLICATION_JSON))
 				.andExpect(jsonPath("$.status").value(200)).andExpect(jsonPath("$.data[0].customerId").value("1"))
 				.andExpect(jsonPath("$.data[0].customerName").value("Roxy"))
-				.andExpect(jsonPath("$.data[0].amount").value(120.0))
-				.andExpect(jsonPath("$.data[0].date[0]").value(2024)).andExpect(jsonPath("$.data[0].date[1]").value(8))
-				.andExpect(jsonPath("$.data[0].date[2]").value(10));
-		;
+				.andExpect(jsonPath("$.data[0].amount").value(120))
+				.andExpect(jsonPath("$.data[0].date").value("2024-08-10"));
 	}
 
 }
