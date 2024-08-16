@@ -42,7 +42,9 @@ http://localhost:9010/retailer-rewards
 
 ## Flow Diagram for Fetch API Process
 
-![reward-api-flowdiagram](https://github.com/user-attachments/assets/ba0bcbf7-3a95-463a-a0ec-77f5b15289ce)
+![fetch-api-flow-diagram](https://github.com/user-attachments/assets/05450d81-237f-4065-94f5-6b9c8558eeae)
+
+
 
 
 ## API Endpoints
